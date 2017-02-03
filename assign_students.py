@@ -24,12 +24,20 @@ except:
     agent_pref_csv = 'test_data.csv'
     objects_csv    = 'test_supervisors.txt'
     print("Using %s as input preferences from students and %s as a list of potential supervisors." % (agent_pref_csv, objects_csv))
-    print("Note: you can specify different files at the prompt.")
+    print("Note: you can specify different files at the prompt:\n")
+    print("   %s file_with_student_prefs.csv list_of_supervisors.txt\n\n" % sys.argv[0])
+
+
+try:
+    outfile = sys.argv[3]
+except:
+    outfile = "assignments_from_" + agent_pref_csv
+
 
 agents = []
 prefs = []
 agentPreferences = {}
-with open(agent_pref_csv, 'r') as f:
+with open(agent_pref_csv, 'rb') as f:
     reader = csv.reader(f)
     for i_row, row in enumerate(reader):
         if i_row == 0:
@@ -62,15 +70,25 @@ allocation = serialDictatorship(prefs, objects)
 initialOwnership = {}
 
 # also print out which agents (students) got assigned to which objects (supervisors)
-print("Serial Dictatorship Allocations:\n_____________________________________")
+#print("Serial Dictatorship Allocations:\n_____________________________________")
 for i, the_agent in enumerate(agents):
-    print("%s: %s" % (agents[i], allocation[i]))
+    #print("%s: %s" % (agents[i], allocation[i]))
     initialOwnership[allocation[i]] = agents[i]
 
-
+# just checking this gives the same answer
 new_allocations = topTradingCycles(agents, objects, agentPreferences, initialOwnership)
-print("\n\n\nHouse Ownership Allocations:\n_____________________________________")
+print("\n\nAllocations:\n_____________________________________")
 for the_agent in new_allocations:
     print("%s: %s" % (the_agent, new_allocations[the_agent]))
+
+
+print("\n\nWriting assignments to file %s ...\n" % outfile)
+# now write to a csv file as well
+with open(outfile, 'wb') as csv_file:
+    writer = csv.writer(csv_file)
+    writer.writerow(["Student", "Supervisor"])
+    for key, value in new_allocations.items():
+       writer.writerow([key, value])
+
 
 #
